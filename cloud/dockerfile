@@ -1,0 +1,28 @@
+# Use an official Python runtime as a base image
+FROM python:3.9-slim
+
+# Set environment variables to avoid Python buffering issues
+ENV PYTHONUNBUFFERED=1
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the requirements.txt file into the container at /app
+COPY requirements.txt /app/
+
+# Install the required dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire project into the container
+COPY . /app/
+
+# Expose the port the app will run on
+EXPOSE 8000
+
+# Command to run the Flask/FastAPI app
+# For Flask
+# CMD ["python", "api/app.py"]
+
+# For FastAPI
+CMD ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+

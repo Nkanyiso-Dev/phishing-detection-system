@@ -1,0 +1,39 @@
+# For Data Handling and Preprocessing
+pandas==1.5.3
+numpy==1.23.4
+
+# For Text Processing and NLP
+nltk==3.7
+scikit-learn==1.2.0
+scipy==1.10.1
+beautifulsoup4==4.11.1
+requests==2.28.1
+
+# For Machine Learning and Model Training
+tensorflow==2.11.0
+torch==1.13.1
+keras==2.11.0
+joblib==1.2.0  # For saving models (e.g., random forest)
+pyyaml==6.0    # For YAML support if needed in config files
+
+# For Web Scraping and Detection
+lxml==4.9.1
+html5lib==1.1
+
+# For API Development
+Flask==2.2.3
+fastapi==0.95.0
+uvicorn==0.20.0   # Uvicorn is needed to run FastAPI
+
+# For Cloud and Deployment
+boto3==1.24.9  # AWS SDK for Python (to interact with AWS services)
+docker==5.0.3   # For Docker-related tasks if using Docker containers
+
+# For Testing
+unittest2==1.1.0
+mock==4.0.3
+
+# For Miscellaneous utilities
+python-dotenv==0.21.0   # For loading environment variables from a .env file
+dnspython==2.2.1        # DNS resolution (needed for SPF/DKIM/DMARC checks)
+
