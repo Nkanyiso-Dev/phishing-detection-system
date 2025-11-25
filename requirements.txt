@@ -1,6 +1,7 @@
 # For Data Handling and Preprocessing
-pandas==1.5.3
-numpy==1.23.4
+numpy>=1.26.0
+pandas>=2.1.0
+
 
 # For Text Processing and NLP
 nltk==3.7
