@@ -25,10 +25,20 @@ def check_dmarc(domain):
     except Exception:
         return 0
 
-# Example usage:
-sender_domain = 'example.com'
-spf = check_spf(sender_domain)
-dkim = check_dkim(sender_domain)
-dmarc = check_dmarc(sender_domain)
+def check_sender(domain: str) -> dict:
+    """Run all sender-authentication checks for a domain in one call."""
+    return {
+        "spf": check_spf(domain),
+        "dkim": check_dkim(domain),
+        "dmarc": check_dmarc(domain),
+    }
 
-print(f"SPF: {spf}, DKIM: {dkim}, DMARC: {dmarc}")
+
+# IMPORTANT: don't run network calls on import - only when executed directly.
+# Previously this ran a live DNS lookup against 'example.com' every time the
+# module was imported (e.g. every app startup), which slowed things down
+# and could raise on machines without network access.
+if __name__ == "__main__":
+    sender_domain = "example.com"
+    result = check_sender(sender_domain)
+    print(f"SPF: {result['spf']}, DKIM: {result['dkim']}, DMARC: {result['dmarc']}")

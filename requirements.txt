@@ -18,7 +18,8 @@ lxml==4.9.3
 html5lib==1.1
 
 # API Frameworks
-Flask==2.2.3
+Flask==3.0.3
+Werkzeug==3.0.3
 fastapi==0.95.0
 uvicorn==0.20.0
 

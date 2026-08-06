@@ -76,7 +76,14 @@ class TestModelTrainingPipeline(unittest.TestCase):
         df = model_training.load_training_data()
         prepared = model_training.prepare_dataframe(df)
         self.assertIn("clean_email", prepared.columns)
-        self.assertTrue(prepared["clean_email"].dtype == object)
+        # pandas >= 2.x may report a dedicated "str" extension dtype instead of
+        # plain "object" for string columns depending on configuration; both
+        # are valid, what matters is the values are actually strings.
+        self.assertTrue(
+            prepared["clean_email"].dtype == object
+            or prepared["clean_email"].dtype.kind in ("O", "U")
+            or all(isinstance(v, str) for v in prepared["clean_email"])
+        )
 
     @patch("data.dataset_loader.merge_datasets")
     def test_build_feature_matrix_shapes(self, mock_merge):

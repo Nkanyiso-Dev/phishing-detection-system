@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phishing Detector</title>
+<style>
+  :root {
+    --bg: #0c1116;
+    --panel: #131a22;
+    --panel-border: #212b36;
+    --text: #dbe4ec;
+    --text-dim: #7c8b9a;
+    --mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --safe: #35d488;
+    --danger: #ff5d5d;
+    --amber: #ffb454;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(53, 212, 136, 0.08), transparent 40%),
+      radial-gradient(circle at 85% 0%, rgba(255, 93, 93, 0.08), transparent 40%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px 80px;
+  }
+
+  .wrap { width: 100%; max-width: 720px; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--safe);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--safe);
+    box-shadow: 0 0 8px var(--safe);
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.25;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+
+  p.lede {
+    color: var(--text-dim);
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 0 32px;
+    max-width: 56ch;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 190px;
+    resize: vertical;
+    background: #0a0f14;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.55;
+    padding: 14px;
+    outline: none;
+  }
+
+  textarea:focus { border-color: var(--safe); }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    gap: 12px;
+  }
+
+  .hint { font-size: 12px; color: var(--text-dim); }
+
+  button {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    background: var(--safe);
+    color: #06140d;
+    border: none;
+    border-radius: 7px;
+    padding: 11px 20px;
+    cursor: pointer;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+    white-space: nowrap;
+  }
+
+  button:hover { opacity: 0.9; }
+  button:active { transform: scale(0.98); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  #result { margin-top: 22px; }
+
+  .verdict {
+    border-radius: 10px;
+    border: 1px solid var(--panel-border);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .verdict.phish { border-color: rgba(255, 93, 93, 0.4); background: rgba(255, 93, 93, 0.07); }
+  .verdict.safe { border-color: rgba(53, 212, 136, 0.4); background: rgba(53, 212, 136, 0.07); }
+
+  .verdict-icon {
+    font-family: var(--mono);
+    font-size: 22px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .phish .verdict-icon { background: rgba(255, 93, 93, 0.15); color: var(--danger); }
+  .safe .verdict-icon { background: rgba(53, 212, 136, 0.15); color: var(--safe); }
+
+  .verdict-title {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+
+  .phish .verdict-title { color: var(--danger); }
+  .safe .verdict-title { color: var(--safe); }
+
+  .verdict-sub { font-size: 13px; color: var(--text-dim); }
+
+  .bar-track {
+    margin-top: 14px;
+    height: 6px;
+    border-radius: 4px;
+    background: #0a0f14;
+    overflow: hidden;
+  }
+
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+  .phish .bar-fill { background: var(--danger); }
+  .safe .bar-fill { background: var(--safe); }
+
+  .error-box {
+    border: 1px solid rgba(255, 180, 84, 0.4);
+    background: rgba(255, 180, 84, 0.08);
+    color: var(--amber);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  footer {
+    margin-top: 40px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="eyebrow">Model online</div>
+    <h1>Paste an email. Get a verdict.</h1>
+    <p class="lede">
+      Runs the trained TF-IDF + Random Forest classifier from this project
+      directly in your browser — no terminal required.
+    </p>
+
+    <div class="panel">
+      <label for="email">Email content</label>
+      <textarea id="email" placeholder="Paste the full text of the email here...">Dear customer, your account has been suspended due to unusual activity. Click here immediately to verify your identity and restore access, or your account will be permanently deleted within 24 hours.</textarea>
+      <div class="row">
+        <span class="hint" id="hint">Paste text or edit the example above.</span>
+        <button id="scanBtn">Scan email</button>
+      </div>
+    </div>
+
+    <div id="result"></div>
+
+    <footer>phishing-detection-system &middot; local inference, nothing leaves this server</footer>
+  </div>
+
+<script>
+const btn = document.getElementById('scanBtn');
+const textarea = document.getElementById('email');
+const resultBox = document.getElementById('result');
+const hint = document.getElementById('hint');
+
+async function scan() {
+  const email = textarea.value.trim();
+  if (!email) {
+    hint.textContent = 'Enter some email text first.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Scanning...';
+  resultBox.innerHTML = '';
+
+  try {
+    const res = await fetch('/api/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      resultBox.innerHTML = `<div class="error-box">${escapeHtml(data.error || 'Something went wrong.')}</div>`;
+      return;
+    }
+
+    const pct = Math.round(data.phishing_probability * 100);
+    const cls = data.is_phishing ? 'phish' : 'safe';
+    const icon = data.is_phishing ? '⚠' : '✓';
+    const title = data.is_phishing ? 'Likely phishing' : 'Looks legitimate';
+    const sub = data.is_phishing
+      ? `${pct}% phishing probability &middot; ${Math.round(data.confidence * 100)}% model confidence`
+      : `${100 - pct}% legitimate probability &middot; ${Math.round(data.confidence * 100)}% model confidence`;
+
+    resultBox.innerHTML = `
+      <div class="verdict ${cls}">
+        <div class="verdict-icon">${icon}</div>
+        <div style="flex:1">
+          <p class="verdict-title">${title}</p>
+          <p class="verdict-sub">${sub}</p>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    resultBox.innerHTML = `<div class="error-box">Couldn't reach the server: ${escapeHtml(String(err))}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Scan email';
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+btn.addEventListener('click', scan);
+textarea.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) scan();
+});
+</script>
+</body>
+</html>
